@@ -193,6 +193,7 @@ void next(){
         	printf("\n\033[0m");
         	cancelAlarm();
         	exit(0);
+		printf("\033[2J");	//清屏
     	}
 	printf("\033[%d;2H", Row+X + 5);
 
