@@ -6,7 +6,7 @@
 #include<signal.h>
 #include<termios.h>
 
-#define Row 20
+#define Row 50
 #define Col 14
 
 #define X 5
@@ -48,6 +48,7 @@ int cur_color;
 
 int state=1;
 
+int fall_speed = 500000;  // 初始下落速率（微秒）
 
 struct itimerval itv;
 
@@ -157,8 +158,20 @@ int main(void)
 					pauseGame();
 					state=0;
 				}
-
-		}
+				break;
+			case '+':  // 加速下落
+			    if (fall_speed > 100000) {  // 最快不低于100毫秒
+				fall_speed -= 50000;  // 减少50000微秒
+				setAlarm();
+			    }
+			    break;
+			case '-':  // 减慢下落
+			    if (fall_speed < 1000000) {  // 最慢不高于1000毫秒
+				fall_speed += 50000;  // 增加50000微秒
+				setAlarm();
+			    }
+			    break;
+				}
 	}
 
 
@@ -189,11 +202,15 @@ void next(){
 
 	if(endGame())
     	{
-        	printf("\033[15;20H游戏结束");
-        	printf("\n\033[0m");
-        	cancelAlarm();
-        	exit(0);
-		printf("\033[2J");	//清屏
+        	printf("\033[2J");
+                printf("\033[15;20H游戏结束");
+                //printf("\n\033[2J");
+                cancelAlarm();
+                system("pause");
+                system("stty echo");
+                system("clear");
+                exit(0);
+                //printf("\033[2J");    //清屏
     	}
 	printf("\033[%d;2H", Row+X + 5);
 
@@ -201,7 +218,7 @@ void next(){
 
 void setAlarm(){
 	itv.it_interval.tv_sec = 0;
-	itv.it_interval.tv_usec = 500000;
+	itv.it_interval.tv_usec = fall_speed;
 	itv.it_value.tv_sec = 1;
 	itv.it_value.tv_usec = 0;
 	setitimer(ITIMER_REAL,&itv,NULL);
@@ -623,16 +640,16 @@ void pauseGame(){
 
 void readme(){
 	 printf("\033[%d;%dH",X+13,Y+32);
-	printf("Read me");
-	printf("\033[%d;%dH",X+14,Y+28);
 	printf("W:Change shape\n");
-	 printf("\033[%d;%dH",X+15,Y+28);
+	printf("\033[%d;%dH",X+14,Y+28);
 	printf("A:Left\n");
-	 printf("\033[%d;%dH",X+16,Y+28);
+	 printf("\033[%d;%dH",X+15,Y+28);
 	printf("S:Right\n");
-       	printf("\033[%d;%dH",X+17,Y+28);
+	 printf("\033[%d;%dH",X+16,Y+28);
 	printf("D:Down\n");
-	 printf("\033[%d;%dH",X+18,Y+28);
+       	printf("\033[%d;%dH",X+17,Y+28);
 	printf("p:Pause\n");
+	 printf("\033[%d;%dH",X+18,Y+28);
+	printf("-/=:speed-/+\n");
 
 }
